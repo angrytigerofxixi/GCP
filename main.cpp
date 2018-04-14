@@ -38,10 +38,107 @@ const int k[6]={5,8,28,72,12,49};
        }
        return 0;
    }
-int HEA(AdjVertexList adjVertexList,int k){
-    Solution solution[8];
-    for (int i = 0; i <8 ; ++i) {
-        solution[i] = new Solution(adjVertexList,k,1415365819+i);
+int HEA(AdjVertexList adjVertexList,int k,int seed){
+    int m = adjVertexList.size();
+    Solution solutions[8]={Solution(adjVertexList,k,seed),Solution(adjVertexList,k,seed+1),
+                          Solution(adjVertexList,k,seed+2),Solution(adjVertexList,k,seed+3),Solution(adjVertexList,k,seed+4),
+                          Solution(adjVertexList,k,seed+5),Solution(adjVertexList,k,seed+6),Solution(adjVertexList,k,seed+7)};
+    int maxgeneration = 10000;
+    int generation = 0;
+    int optima =100000000;
+    int M =8;
+    while (generation<maxgeneration && optima>0){
+        //choose parents，the first parent choosen randomly , the second parent choosen the best;
+        int x1 = rand() % M;
+        int x2 = ((x1==0)?1:0);
+        int minconflict = 1000000;
+        float number = 1;
+        for(int i = 0;i<M;i++){
+            if(i!=x1){
+                if(solutions[x1].conflictedge<minconflict) {
+                    minconflict = solutions[x1].conflictedge;
+                    x2 = i;
+                    number = 1.0;
+                } else if(solutions[x1].conflictedge==minconflict){
+                    number ++;
+                    if (rand()/(RAND_MAX+1.0)<1/number){
+                        x2 = i;
+                    }
+                }
+            }
+
+        }
+        int s1[1000];
+        int s2[1000];
+        memcpy(s1,solutions[x1].sol, sizeof(solutions[x1].sol));
+        memcpy(s2,solutions[x2].sol, sizeof(solutions[x2].sol));
+        int s0[1000];
+        for (int j = 0; j < m; ++j) {
+            s0[j] = -1;
+        }
+        //combine two parents
+        for (int i = 0; i < k; ++i) {
+            if (i % 2 != 0) {
+                vector<int> colorset(k + 1);
+                int maxcolorsize = 0;
+                int maxcolor = 0;
+                for (int j = 0; j < m; ++j) {
+                    int color = s1[j];
+                    if (color == -1) {
+                        colorset[k] += 1;
+                    } else {
+                        colorset[color] += 1;
+                    }
+                }
+                for (int n = 0; n < k; ++n) {
+                    if (colorset[n] >= maxcolorsize) {
+                        maxcolorsize = colorset[n];
+                        maxcolor = n;
+                    }
+                }
+                for (int l = 0; l < m; ++l) {
+                    if (s1[l] == maxcolor) {
+                        s0[l] = i;
+                        s1[l] = -1;
+                        s2[l] = -1;
+                    }
+
+                }
+            } else {
+                vector<int> colorset(k + 1);
+                int maxcolorsize = 0;
+                int maxcolor = 0;
+                for (int j = 0; j < m; ++j) {
+                    int color = s2[j];
+                    if (color == -1) {
+                        colorset[k] += 1;
+                    } else {
+                        colorset[color] += 1;
+                    }
+                }
+                for (int n = 0; n < k; ++n) {
+                    if (colorset[n] >= maxcolorsize) {
+                        maxcolorsize = colorset[n];
+                        maxcolor = n;
+                    }
+                }
+                for (int l = 0; l < m; ++l) {
+                    if (s2[l] == maxcolor) {
+                        s0[l] = i;
+                        s2[l] = -1;
+                        s1[l] = -1;
+                    }
+
+                }
+            }
+        }
+
+        for (int i = 0; i < m; ++i) {
+            if (s0[i] == -1) {
+                s0[i] = rand() % k;
+            }
+        }
+        Solution offspring(adjVertexList,k,s0);
 
     }
 

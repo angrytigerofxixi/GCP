@@ -42,6 +42,8 @@ public:
 
     Solution(AdjVertexList adjVertexList,int k,int seed);
     void tabusearch(int Maxiter);
+    Solution(Solution solution);
+    Solution(AdjVertexList adjVertexList,int colornumber,int sol1[1000]);
 };
 
 extern AdjVertexList readmatrix(const std::string &fileName);
