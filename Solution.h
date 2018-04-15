@@ -13,11 +13,11 @@ typedef std::vector< AdjVertex > AdjVertexList;//定义邻接表
 const std::string instDir = "../instance/";
 const int maxLength = 9999;
 const std::string instance[10] = {
-        "DSJC125.1.col",    // 020
-        "DSJC250.1.col",    // 130
-        "DSJC250.5.col",    // 270
-        "DSJC250.9.col",    // 3120
-        "DSJC500.1.col",    // 4100
+        "DSJC125.1.col",    // 0
+        "DSJC250.1.col",    // 1
+        "DSJC250.5.col",    // 2
+        "DSJC250.9.col",    // 3
+        "DSJC500.1.col",    // 41
         "DSJC500.5.col",    // 5
         "DSJC500.9.col",    // 6
         "DSJC1000.1.col",   // 7
@@ -37,14 +37,13 @@ public:
     int conflictPointNumber = 0;//冲突节点数
     int k = 0;//定义颜色数
     int iter =0;
-    int m = 0;
+    int m = 0;//定义节点数
     AdjVertexList adjVertexListin;
 
     Solution(AdjVertexList adjVertexList,int k,int seed);
     void tabusearch(int Maxiter);
-    Solution(Solution solution);
-    Solution(AdjVertexList adjVertexList,int colornumber,int sol1[1000]);
 };
 
 extern AdjVertexList readmatrix(const std::string &fileName);
+extern int tabusearch(AdjVertexList adjVertexList, int k,int* solution);
 #endif //GCP_SOLUTION_H

@@ -71,41 +71,6 @@ Solution::Solution(AdjVertexList adjVertexList,int colornumber,int seed) {
     conflictedge = conflictedge/2;
 }
 
-Solution:: Solution(AdjVertexList adjVertexList,int colornumber,int *sol1){
-    cout<<"初始conflictedge是"<<conflictedge<<endl;
-    adjVertexListin = adjVertexList;
-    m = adjVertexList.size();
-    k = colornumber;
-    for(int i =0;i<m;i++){
-        sol[i] = sol1[i];
-    }
-    //初始化邻接颜色表
-    int modifycolorlist [1000][100];
-    memcpy(adjColorList,modifycolorlist, sizeof(modifycolorlist));
-    memcpy(tabulist,modifycolorlist, sizeof(modifycolorlist));
-    int modifyConflit[1000];
-    memcpy(conflictpoint,modifyConflit, sizeof(modifyConflit));
-    memcpy(conflictPointPosition,modifyConflit, sizeof(modifyConflit));
-
-    for(int i= 0;i < m;i++){
-        for (int j =0;j < adjVertexList[i].size() ; ++j) {
-            int color = sol[adjVertexList[i][j]];
-            adjColorList[i][color]++;
-        }
-    }
-    //初始化邻接冲突节点表和冲突边数
-    for (int i = 0; i < m; ++i) {
-        int possiblecollide = adjColorList[i][sol[i]];
-        if( possiblecollide > 0) {
-            conflictedge += possiblecollide;
-            conflictpoint[conflictPointNumber] = i;
-            conflictPointPosition[i] = conflictPointNumber;
-            conflictPointNumber ++ ;
-        }
-    }
-    conflictedge = conflictedge/2;
-}
-
 void Solution::tabusearch(int Maxiter){
     int bestConflictedge =conflictedge;
     while(conflictedge >0 && iter < Maxiter) {
@@ -298,7 +263,6 @@ int tabusearch(AdjVertexList adjVertexList, int k,int* sol){
             conflictedge = conflictedge - adjColorList[bestvertex][sol[bestvertex]] +bestlocalf;
             int oldsol = sol[bestvertex];
             sol[bestvertex] = bestmove;
-            //更新邻接颜色表
             for(int adjacentvertex:adjVertexList[bestvertex])
             {
                 int x =adjColorList[adjacentvertex][sol[adjacentvertex]];

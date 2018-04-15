@@ -1,21 +1,23 @@
 #include <iostream>
+#include <set>
 #include "Solution.h"
 using namespace std;
 const int k[6]={5,8,28,72,12,49};
+//每次打印一个禁忌搜索的例子
    int logTabu(int i){
        ofstream outfile;
        outfile.open("Logtabusearch.csv",ios::app);
        AdjVertexList adjVertexList = readmatrix(instDir+instance[i]);
-       Solution solution(adjVertexList,k[i],1415365819);
+       Solution solution(adjVertexList,k[i],1776672059);
        time_t start;
        time_t end;
        time(&start);
-       solution.tabusearch(100000000);
+       solution.tabusearch(900000000);
        time(&end);
        double cost = difftime(end, start);
        outfile << instance[i] << ",";
        outfile << "tabusearch" << ",";
-       outfile <<1415365819 << ",";
+       outfile <<1776672059<< ",";
        outfile << k[i] << ",";
        outfile << cost << ",";
        outfile << solution.iter << ",";
@@ -27,6 +29,7 @@ const int k[6]={5,8,28,72,12,49};
        outfile.close();
        return 0;
    }
+//每次打印多个禁忌搜索的例子
    int logtabusearch(){
        ofstream outfile;
        outfile.open("Logtabusearch.csv");
@@ -38,28 +41,39 @@ const int k[6]={5,8,28,72,12,49};
        }
        return 0;
    }
-int HEA(AdjVertexList adjVertexList,int k,int seed){
+
+//hybrid evoluation
+void HEA(int k,int Maxiter,AdjVertexList adjVertexList,int M) {
     int m = adjVertexList.size();
-    Solution solutions[8]={Solution(adjVertexList,k,seed),Solution(adjVertexList,k,seed+1),
-                          Solution(adjVertexList,k,seed+2),Solution(adjVertexList,k,seed+3),Solution(adjVertexList,k,seed+4),
-                          Solution(adjVertexList,k,seed+5),Solution(adjVertexList,k,seed+6),Solution(adjVertexList,k,seed+7)};
-    int maxgeneration = 10000;
-    int generation = 0;
-    int optima =100000000;
-    int M =8;
-    while (generation<maxgeneration && optima>0){
-        //choose parents，the first parent choosen randomly , the second parent choosen the best;
-        int x1 = rand() % M;
+    int solutions[20][1000];
+    for(int i= 0;i<M;i++){
+        for(int j=0;j<m;j++){
+            solutions[i][j]=rand()%k;
+        }
+    }
+    int collideEdges[20];
+    //----------------------------initialize the population and get conflictEdges-----------------------------------------
+    for (int i = 0; i < M; ++i) {
+        collideEdges[i]= tabusearch(adjVertexList,k,solutions[i]);
+    }
+    int iter = 0;
+    int size = M;
+    time_t start;
+    time_t  end;
+    time(&start);
+    while (iter < Maxiter) {
+        //----------------select two parents, s1 is selected randomly,s2 is the best one------------------------------------
+        int x1 = rand() % size;
         int x2 = ((x1==0)?1:0);
-        int minconflict = 1000000;
+        int mincollide = 1000000;
         float number = 1;
-        for(int i = 0;i<M;i++){
+        for(int i = 0;i<size;i++){
             if(i!=x1){
-                if(solutions[x1].conflictedge<minconflict) {
-                    minconflict = solutions[x1].conflictedge;
+                if(collideEdges[i]<mincollide) {
+                    mincollide = collideEdges[i];
                     x2 = i;
                     number = 1.0;
-                } else if(solutions[x1].conflictedge==minconflict){
+                } else if(collideEdges[i] == mincollide){
                     number ++;
                     if (rand()/(RAND_MAX+1.0)<1/number){
                         x2 = i;
@@ -70,13 +84,15 @@ int HEA(AdjVertexList adjVertexList,int k,int seed){
         }
         int s1[1000];
         int s2[1000];
-        memcpy(s1,solutions[x1].sol, sizeof(solutions[x1].sol));
-        memcpy(s2,solutions[x2].sol, sizeof(solutions[x2].sol));
+        for(int i=0;i<m;i++){
+            s1[i] = solutions[x1][i];
+            s2[i] =solutions[x2][i];
+        }
         int s0[1000];
         for (int j = 0; j < m; ++j) {
             s0[j] = -1;
         }
-        //combine two parents
+        //------------------------------------------------combine two parents-----------------------------------------------
         for (int i = 0; i < k; ++i) {
             if (i % 2 != 0) {
                 vector<int> colorset(k + 1);
@@ -138,18 +154,137 @@ int HEA(AdjVertexList adjVertexList,int k,int seed){
                 s0[i] = rand() % k;
             }
         }
-        Solution offspring(adjVertexList,k,s0);
 
+        int f = tabusearch(adjVertexList,k,s0);
+        //----------------------------updathe the population-------------------------------------------------------------
+        cout << " f是 " << f << endl;
+        for(int i =0;i<m;i++){
+            solutions[size][i] = s0[i];
+        }
+        collideEdges[size] = f;
+        ++size;//此时size是包含了s0之后的size
+        float bestcollideedge = 0;
+        int bestindex = 0;
+        for (int i = 0; i < size; ++i) {
+            if (collideEdges[i] > bestcollideedge) {
+                bestcollideedge = collideEdges[i];
+                bestindex = i;
+            }
+        }
+        if (bestindex != size - 1) {
+            for(int i=0;i<m;i++){
+                solutions[bestindex][i] = s0[i];
+            }
+            collideEdges[bestindex] = f;
+            --size;
+
+            cout<<"执行最优策略"<<endl;
+        }
+        else if(size<2*M){
+            cout<<"单纯添加"<<endl;
+        }
+        else{
+            while (size>M){
+                int worst = 0;
+                int worstindex =0;
+                for(int i =0;i <size;i++){
+                    if(collideEdges[i]>worst){
+                        worst = collideEdges[i];
+                        worstindex = i;
+                    }
+                }
+                for(int i =0;i<m;i++){
+                    solutions[worstindex][i] =solutions[size-1][i];
+                }
+                    collideEdges[worstindex] =collideEdges[size-1];
+                size--;
+            }
+            //-------------------------种群变异策略------------------------------------------------------------------
+            // srand((int)time(0));
+            set<int> mutatedIndibiduals;
+            int mutatenumber = 1;
+            while (mutatenumber -- ){
+                int individual;
+                do{
+                    individual = rand()%size;
+                }while (mutatedIndibiduals.find(individual)!=mutatedIndibiduals.end());
+                mutatedIndibiduals.insert(individual);
+                //---------------个体变异策略---------------------------------------------------------------------------
+                int perturbVertexNumber = rand()%m;
+                for(;perturbVertexNumber>0;perturbVertexNumber--){
+                    solutions[individual][rand()%m] =rand()%k;
+                }//下面更新变异后的个体信息
+                int adjColorTable[1000][100];
+                for(int i= 0;i < m;i++){
+                    for (int j =0;j < adjVertexList[i].size() ; ++j) {
+                        int color = solutions[individual][adjVertexList[i][j]];
+                        adjColorTable[i][color]++;
+                    }
+                }
+
+                collideEdges[individual] = 0;
+                for (int i = 0; i < m; ++i) {
+                    int possiblecollide = adjColorTable[i][solutions[individual][i]];
+                    if( possiblecollide > 0) {
+                        collideEdges[individual] += possiblecollide;
+                    }
+                }
+                collideEdges[individual] = collideEdges[individual]/2;
+            }
+            cout<<"执行削减策略"<<endl;
+        }
+
+        for (int i1 = 0; i1 < size; ++i1) {
+            cout << " " << collideEdges[i1] << " ";
+
+        }
+        cout << "第"<<iter<<"代"<<endl;
+        iter+=1;
+     cout<<endl;
     }
+    time(&end);
+    ofstream outfile;
+    outfile.open("LogHEA.csv",ios::app);
+    double cost = difftime(end, start);
+    outfile << instance[5] << ",";
+    outfile << "tabusearch" << ",";
+    outfile <<1776672059<< ",";
+    outfile << k << ",";
+    outfile << cost << ",";
+    outfile << iter << ",";
+    for (int j = 0; j < m; ++j) {
+        outfile << 0<< " ";
+    }
+    outfile << endl;
+    //cout<<k[i]<<endl;
+    outfile.close();
+}
 
-};
+//用于打印hybrid evloluation
+int logHEA(){
+    ofstream outfile;
+    outfile.open("LogHEA.csv");
+    outfile<<"Instance"<<","<<"Algorithm"<<","<<"Randseed"<<","<<"k"<<","<<"time"<<","
+           <<"Itercount"<<","<<"Solution"<<","<<endl;
+    outfile.close();
+    AdjVertexList adjVertexList = readmatrix(instDir + instance[5]);
+    HEA(48, 10000, adjVertexList, 8);
+}
 
 int main() {
-   /*AdjVertexList adjVertexList = readmatrix(instDir+instance[3]);
-    Solution solution(adjVertexList,72,1415365819);
-    cout<<solution.conflictedge;
-    solution.tabusearch(100000000);*/
-    logTabu(5);
+    AdjVertexList adjVertexList = readmatrix(instDir + instance[5]);
+    srand(17766720);
+   // int sol[1000];
+   // for(int i =0;i<500;i++){
+     //   sol[i] = rand()%49;
+   // }
+   // tabusearch(adjVertexList,49,sol);*/
+   // logTabu(5);
 
+     HEA(48, 10000, adjVertexList, 8);
 
 }
+
+
+
+
