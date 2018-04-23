@@ -1,71 +1,40 @@
-{\rtf1\ansi\ansicpg936\cocoartf1504\cocoasubrtf830
-{\fonttbl\f0\fnil\fcharset134 PingFangSC-Regular;\f1\fswiss\fcharset0 Helvetica;}
-{\colortbl;\red255\green255\blue255;}
-{\*\expandedcolortbl;;}
-\paperw11900\paperh16840\margl1440\margr1440\vieww10800\viewh8400\viewkind0
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+任务进度：
+完成禁忌搜索算法500.5 49种颜色 每秒迭代次数：5.5万次  因使用的是低压处理器 故预测正常迭代次数为9到10万次
 
-\f0\fs24 \cf0 \'c8\'ce\'ce\'f1\'bd\'f8\'b6\'c8\'a3\'ba
-\f1 \
+完成混合进化算法500.5 49种颜色
 
-\f0 \'cd\'ea\'b3\'c9\'bd\'fb\'bc\'c9\'cb\'d1\'cb\'f7\'cb\'e3\'b7\'a8
-\f1 500.5 49
-\f0 \'d6\'d6\'d1\'d5\'c9\'ab
-\f1  
-\f0 \'c3\'bf\'c3\'eb\'b5\'fc\'b4\'fa\'b4\'ce\'ca\'fd\'a3\'ba
-\f1 5.5
-\f0 \'cd\'f2\'b4\'ce
-\f1   
-\f0 \'d2\'f2\'ca\'b9\'d3\'c3\'b5\'c4\'ca\'c7\'b5\'cd\'d1\'b9\'b4\'a6\'c0\'ed\'c6\'f7
-\f1  
-\f0 \'b9\'ca\'d4\'a4\'b2\'e2\'d5\'fd\'b3\'a3\'b5\'fc\'b4\'fa\'b4\'ce\'ca\'fd\'ce\'aa
-\f1 9
-\f0 \'b5\'bd
-\f1 10
-\f0 \'cd\'f2\'b4\'ce
-\f1 \
-\
+禁忌搜索算法打印出的结果在Logtabusearch.csv文件中
+混合进化算法仍在调试中 故暂时没有打印文件
 
-\f0 \'cd\'ea\'b3\'c9\'bb\'ec\'ba\'cf\'bd\'f8\'bb\'af\'cb\'e3\'b7\'a8
-\f1 500.5 49
-\f0 \'d6\'d6\'d1\'d5\'c9\'ab
-\f1 \
-\
+在Solution.cpp中定义了两个tabusearch函数
+类内定义用于实现禁忌搜索
+类外定义用于实现混合进化搜索
+在开始的想法中我想用包含很多信息的可行解的类来实现混合进化算法 后来觉得这样不仅无助于提升效率还可能占用很多内存故用函数的形式来构建混合进化算法
 
-\f0 \'bd\'fb\'bc\'c9\'cb\'d1\'cb\'f7\'cb\'e3\'b7\'a8\'b4\'f2\'d3\'a1\'b3\'f6\'b5\'c4\'bd\'e1\'b9\'fb\'d4\'da
-\f1 Logtabusearch.csv
-\f0 \'ce\'c4\'bc\'fe\'d6\'d0
-\f1 \
+混合进化算法种群更新策略最开始是用KM算法得到两个解之间的距离，和冲突边数构造成一个专一性与多样性的函数；后来采用在一定次数的种群更新后扰乱部分解的策略维持多样性
 
-\f0 \'bb\'ec\'ba\'cf\'bd\'f8\'bb\'af\'cb\'e3\'b7\'a8\'c8\'d4\'d4\'da\'b5\'f7\'ca\'d4\'d6\'d0
-\f1  
-\f0 \'b9\'ca\'d4\'dd\'ca\'b1\'c3\'bb\'d3\'d0\'b4\'f2\'d3\'a1\'ce\'c4\'bc\'fe
-\f1 \
-\
+混合进化算法运行较慢，仍待调优
 
-\f0 \'d4\'da
-\f1 Solution.cpp
-\f0 \'d6\'d0\'b6\'a8\'d2\'e5\'c1\'cb\'c1\'bd\'b8\'f6
-\f1 tabusearch
-\f0 \'ba\'af\'ca\'fd
-\f1 \
+最终总结：
+还是没有调试出混合进化算法的48种颜色，甚至实现49种颜色比禁忌搜索还慢，但是我检查了
+很多遍，优化了一些小细节，还是没有用
 
-\f0 \'c0\'e0\'c4\'da\'b6\'a8\'d2\'e5\'d3\'c3\'d3\'da\'ca\'b5\'cf\'d6\'bd\'fb\'bc\'c9\'cb\'d1\'cb\'f7
-\f1 \
+相比最初的版本增加了一些注释，修改了一些小细节。
 
-\f0 \'c0\'e0\'cd\'e2\'b6\'a8\'d2\'e5\'d3\'c3\'d3\'da\'ca\'b5\'cf\'d6\'bb\'ec\'ba\'cf\'bd\'f8\'bb\'af\'cb\'d1\'cb\'f7
-\f1 \
+混合优化算法没有达到预期的效果的原因可能是：
+1 禁忌搜索10W次可能不够
+2 两种禁忌搜索优化的策略：1 返回最优解
+                      2 返回10W次之后的解
+  第一种策略效果较好，但是容易陷入局部最优值，第二种太慢
+3 算法实现哪一步可能出现了我没有检查到的问题（可能性较小）
+4 最关键的交叉算符，根据debug的情况来看，并没有出问题
 
-\f0 \'d4\'da\'bf\'aa\'ca\'bc\'b5\'c4\'cf\'eb\'b7\'a8\'d6\'d0\'ce\'d2\'cf\'eb\'d3\'c3\'b0\'fc\'ba\'ac\'ba\'dc\'b6\'e0\'d0\'c5\'cf\'a2\'b5\'c4\'bf\'c9\'d0\'d0\'bd\'e2\'b5\'c4\'c0\'e0\'c0\'b4\'ca\'b5\'cf\'d6\'bb\'ec\'ba\'cf\'bd\'f8\'bb\'af\'cb\'e3\'b7\'a8
-\f1  
-\f0 \'ba\'f3\'c0\'b4\'be\'f5\'b5\'c3\'d5\'e2\'d1\'f9\'b2\'bb\'bd\'f6\'ce\'de\'d6\'fa\'d3\'da\'cc\'e1\'c9\'fd\'d0\'a7\'c2\'ca\'bb\'b9\'bf\'c9\'c4\'dc\'d5\'bc\'d3\'c3\'ba\'dc\'b6\'e0\'c4\'da\'b4\'e6\'b9\'ca\'d3\'c3\'ba\'af\'ca\'fd\'b5\'c4\'d0\'ce\'ca\'bd\'c0\'b4\'b9\'b9\'bd\'a8\'bb\'ec\'ba\'cf\'bd\'f8\'bb\'af\'cb\'e3\'b7\'a8
-\f1 \
-\
+改进方向：
+1 可以写一些调试代码，使调试更快
+2 经验太少，可能在程序中犯了一些低级错误不自知。
 
-\f0 \'bb\'ec\'ba\'cf\'bd\'f8\'bb\'af\'cb\'e3\'b7\'a8\'d6\'d6\'c8\'ba\'b8\'fc\'d0\'c2\'b2\'df\'c2\'d4\'d7\'ee\'bf\'aa\'ca\'bc\'ca\'c7\'d3\'c3
-\f1 KM
-\f0 \'cb\'e3\'b7\'a8\'b5\'c3\'b5\'bd\'c1\'bd\'b8\'f6\'bd\'e2\'d6\'ae\'bc\'e4\'b5\'c4\'be\'e0\'c0\'eb\'a3\'ac\'ba\'cd\'b3\'e5\'cd\'bb\'b1\'df\'ca\'fd\'b9\'b9\'d4\'ec\'b3\'c9\'d2\'bb\'b8\'f6\'d7\'a8\'d2\'bb\'d0\'d4\'d3\'eb\'b6\'e0\'d1\'f9\'d0\'d4\'b5\'c4\'ba\'af\'ca\'fd\'a3\'bb\'ba\'f3\'c0\'b4\'b2\'c9\'d3\'c3\'d4\'da\'d2\'bb\'b6\'a8\'b4\'ce\'ca\'fd\'b5\'c4\'d6\'d6\'c8\'ba\'b8\'fc\'d0\'c2\'ba\'f3\'c8\'c5\'c2\'d2\'b2\'bf\'b7\'d6\'bd\'e2\'b5\'c4\'b2\'df\'c2\'d4\'ce\'ac\'b3\'d6\'b6\'e0\'d1\'f9\'d0\'d4
-\f1 \
-\
+                      
 
-\f0 \'bb\'ec\'ba\'cf\'bd\'f8\'bb\'af\'cb\'e3\'b7\'a8\'d4\'cb\'d0\'d0\'bd\'cf\'c2\'fd\'a3\'ac\'c8\'d4\'b4\'fd\'b5\'f7\'d3\'c5}
+
+
+
