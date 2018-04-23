@@ -167,12 +167,14 @@ void Solution::tabusearch(int Maxiter){
 int tabusearch(AdjVertexList adjVertexList, int k,int* sol){
     int  m = adjVertexList.size();
     //初始化邻接颜色表
-    int adjColorList [1000][100] ={0};
-    int tabulist[1000][100]={0};
-    int conflictedge = 0;
-    int conflictpoint[1000]={0};
-    int conflictPointPosition[1000]={0};
-    int conflictPointNumber =0;
+    int adjColorList [1000][100] ={0};//邻接颜色表
+    int tabulist[1000][100]={0};//禁忌表
+    int conflictedge = 0;//冲突边数
+    int conflictpoint[1000]={0};//用于保存冲突节点
+    int conflictPointPosition[1000]={0};//保存冲突节点的位置
+    int conflictPointNumber =0;//保存冲突节点数
+
+    //初始化邻接颜色表
     for(int i= 0;i < m;i++){
         for (int j =0;j < adjVertexList[i].size() ; ++j) {
             int color = sol[adjVertexList[i][j]];
@@ -190,16 +192,21 @@ int tabusearch(AdjVertexList adjVertexList, int k,int* sol){
         }
     }
     conflictedge = conflictedge/2;
-    int bestConflictedge =conflictedge;
+
+    int bestConflictedge =conflictedge;//记录最优值
     int iter =0;
-    int localoptimaSolution[1000];
+    int localoptimaSolution[1000];//记录最优解
+
     while(conflictedge >0 && iter <100000) {
-        int bestvertex = 0;
-        int bestmove = sol[0];
-        int bestlocalf = m;
+        int bestvertex = 0;//领域动作改变的节点
+        int bestmove = sol[0];//领域动作改变的节点改变的新颜色
+        int bestlocalf = m;//领域动作移到新颜色后与周围节点的冲突数
+
+        //记录禁忌的动作信息
         int tabubestvertex = 0;
         int tabubestmove =sol[0];
         int tabubestlocalf = m;
+
         float number =1;
         float tabunumber = 1;
         //---------------------findbestmove function------------------------------------------------------------------------
@@ -247,22 +254,29 @@ int tabusearch(AdjVertexList adjVertexList, int k,int* sol){
         //-------------------------------------makemove function -----------------------------------------------------------
         iter += 1;
         if(bestlocalf != m){
+
+            //更新最优值
             if (conflictedge < bestConflictedge) {
                 bestConflictedge = conflictedge;
-                for (int i = 0; i < m; i++) {
-                    localoptimaSolution[i] = sol[i];
+                //for (int i = 0; i < m; i++) {
+                  // localoptimaSolution[i] = sol[i];
 
-                }
+                //}
             }
+
+            //如果领域动作后节点与周围节点没有冲突，则从冲突节点表中移除此节点
             if (bestlocalf == 0)
             {
                 conflictpoint[conflictPointPosition[bestvertex]] = conflictpoint[conflictPointNumber-1];
                 conflictPointPosition[conflictpoint[conflictPointNumber-1]]=conflictPointPosition[bestvertex];
                 conflictPointNumber--;
             }
-            conflictedge = conflictedge - adjColorList[bestvertex][sol[bestvertex]] +bestlocalf;
-            int oldsol = sol[bestvertex];
-            sol[bestvertex] = bestmove;
+
+            conflictedge = conflictedge - adjColorList[bestvertex][sol[bestvertex]] +bestlocalf;//更新当前冲突边
+            int oldsol = sol[bestvertex];//记录旧解
+            sol[bestvertex] = bestmove;//更新新解
+
+            //更新邻接颜色表和冲突节点表
             for(int adjacentvertex:adjVertexList[bestvertex])
             {
                 int x =adjColorList[adjacentvertex][sol[adjacentvertex]];
@@ -279,16 +293,16 @@ int tabusearch(AdjVertexList adjVertexList, int k,int* sol){
                     conflictPointNumber++;
                 }
             }
-            tabulist[bestvertex][oldsol] = iter + conflictedge + rand() % 10    ;
+
+            tabulist[bestvertex][oldsol] = iter + conflictedge + rand() % 11  ;//更新禁忌表
         }
+       // cout<<iter<<" "<<conflictedge<<" "<<bestConflictedge<<endl;
     }
-    cout<<"经过tabusearch的"<<bestConflictedge<<endl;
-    for(int i =0; i<m;i++){
-        sol[i] = localoptimaSolution[i];
-    }
-    return bestConflictedge;
 
-
-
+    cout<<"经过tabusearch的"<<conflictedge<<endl;
+   // for(int i =0; i<m;i++){
+     //   sol[i] = localoptimaSolution[i];
+    //}
+    return conflictedge;
 }
 
